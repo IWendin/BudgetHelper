@@ -107,7 +107,7 @@ for sequenceNumber in range(totalBoxes):
 parsedText = ParseText(details)
 purchase = GetExpense(parsedText)
 
-# ----- # Seve to txt # ------ # 
+# ----- # Save to txt # ------ # 
 with open('result_text.txt', 'w', newline='') as file:
     csv.writer(file, delimiter=" ").writerows(parsedText)
 
@@ -116,19 +116,13 @@ excelFile = 'Budget.xlsx'
 
 # Read file
 budget_sheet = pd.read_excel(excelFile, sheet_name=0)
-
-# xlsx = pd.ExcelFile(excelFile)
-# expensesSheets = []
-# for sheet in xlsx.sheet_names:
-#    expensesSheets.append(xlsx.parse(sheet))
-# expenses = pd.concat(expensesSheets)
-# print(expenses.shape) # Control
+print("The loaded budget sheet has content: \n", budget_sheet)
 
 # Fill content
 purchaseDf = GetPurchase(parsedText)
-print("The purchase was: \n", purchaseDf)
-budget_sheet.append(purchaseDf)
-# print(budget_sheet)
+#print("The purchase was: \n", purchaseDf)
+budget_sheet = pd.concat([budget_sheet, purchaseDf])
+# print("The updated file has content: \n", budget_sheet)
 
 # Write to file 
-purchaseDf.to_excel(excelFile, index=False)
+budget_sheet.to_excel(excelFile, index=False)
