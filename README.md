@@ -5,7 +5,7 @@ This project is meant to create a receipt scanner which helps people quickly und
 - ~~Basic OCR functionality~~
 - ~~Basic storage in excel file~~
 - Improved image preprocessing
-- Improved excel file handling and formatting 
+- ~~Improved excel file handling and formatting 
 - Plot monthly expenses
 - Automatic recognition of the place of purchase: Coop, ICA, Akademibokhandeln etc.
 - Automatic categorization of type of purchase: food, apparel, hobby, travel etc.
