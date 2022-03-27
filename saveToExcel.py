@@ -4,7 +4,6 @@ from getPurchase import *
 def saveToExcel(excelFile, parsedText):
     # Read file
     budget_sheet = pd.read_excel(excelFile, sheet_name=0)
-    print("The loaded budget sheet has content: \n", budget_sheet)
 
     # Fill content
     purchaseDf = GetPurchase(parsedText)
@@ -14,3 +13,4 @@ def saveToExcel(excelFile, parsedText):
 
     # Write to file 
     budget_sheet.to_excel(excelFile, index=False)
+    print("The saved budget sheet has content: \n", budget_sheet)
