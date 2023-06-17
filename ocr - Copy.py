@@ -4,7 +4,6 @@ import pytesseract
 import csv
 import pandas as pd
 import numpy as np
-from saveToExcel import *
 
 from datetime import datetime 
 from PIL import Image, ImageEnhance, ImageFilter
@@ -28,28 +27,48 @@ def ParseText(textDetails):
             wordList = []
     return parsedText
 
-# Not used when writing to excel sheet.
-# Takes in the parsed text as a list,
-# returns the price as float
 def GetExpense(parsedText: list) -> float:
     #print(parsedText)
     breakNext = False
-    countTotalt = 0
     for list in parsedText:
         for element in list:
             if(breakNext):
-                # print("Content of identified element: "+element)
-                # break
-                element = str(element).replace(',','.')
-                return float(element)
-            if ((element == "Totalt" and countTotalt == 1) or element == "KORTKÖP"):
+                #print("Content of identified element: "+element)
+               # break
+               element = str(element).replace(',','.')
+               return float(element)
+            if(element == "KORTKOP" or element == "KORTKÖP"):
                 breakNext = True
-            elif (element == "Totalt"):
-                countTotalt+1
 
+def GetPurchase(parsedText):
+    # print(parsedText)
+    budgetDf = pd.DataFrame({'Ware': [0], 'Expense': [0], 'Date': [0], 'Store': [0], 'Category': [0]})
+    # print(budgetDf)
+    addDate = False
+    addExpense = False
+    for list in parsedText:
+        for element in list:
+            if(addDate):
+                dateObject = pd.to_datetime(str(element), format="%Y-%m-%d")
+                budgetDf['Date'] = dateObject
+                # print(budgetDf)
+                addDate = False
+            if(addExpense):
+                element = str(element).replace(',','.')
+                budgetDf['Expense'] = float(element)
+                # print(budgetDf)
+                return budgetDf
+            if(element == "KORTKOP" or element == "KORTKÖP"):
+                    addExpense = True
+            if(element == "Datum:"):
+                    addDate = True
+
+
+
+    
 #------# Preprocessing #------#
 
-im = cv2.imread('kvitton/kvitto2.jpg')
+im = cv2.imread('kvitton/kvitto.jpg')
 
 # make gray
 im = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
@@ -86,9 +105,7 @@ for sequenceNumber in range(totalBoxes):
 
 #------# Parse text #------#
 parsedText = ParseText(details)
-# purchase = GetExpense(parsedText)       # Old storage solution
-print("The parsed text: \n", parsedText)
-#print("The purchase was: ", purchase)
+purchase = GetExpense(parsedText)
 
 # ----- # Save to txt # ------ # 
 with open('result_text.txt', 'w', newline='') as file:
@@ -96,4 +113,16 @@ with open('result_text.txt', 'w', newline='') as file:
 
 # ----- # Save to Excel # ----- #
 excelFile = 'Budget.xlsx'
-saveToExcel(excelFile, parsedText)
+
+# Read file
+budget_sheet = pd.read_excel(excelFile, sheet_name=0)
+print("The loaded budget sheet has content: \n", budget_sheet)
+
+# Fill content
+purchaseDf = GetPurchase(parsedText)
+#print("The purchase was: \n", purchaseDf)
+budget_sheet = pd.concat([budget_sheet, purchaseDf])
+# print("The updated file has content: \n", budget_sheet)
+
+# Write to file 
+budget_sheet.to_excel(excelFile, index=False)
