@@ -9,24 +9,26 @@ from datetime import datetime
 from PIL import Image, ImageEnhance, ImageFilter
 from pytesseract.pytesseract import Output
 
+from parseText import ParseText
+
 ## tesseract_cmd for VS Code to find tesseract. NOTE! Update PATH to fit your installation location
 pytesseract.pytesseract.tesseract_cmd = '/usr/local/Cellar/tesseract/5.3.1_1/bin/tesseract'  
 ##"C:/Program Files/Tesseract-OCR/tesseract.exe"
 
 # ---------- Functions ---------- #
 
-def ParseText(textDetails):
-    parsedText = []
-    wordList = []
-    lastWord = ''
-    for word in textDetails['text']:
-        if word != '':
-            wordList.append(word)
-            lastWord = word
-        if (lastWord != '' and word == '') or (word == textDetails['text'][-1]):
-            parsedText.append(wordList)
-            wordList = []
-    return parsedText
+# def ParseText(textDetails):
+#     parsedText = []
+#     wordList = []
+#     lastWord = ''
+#     for word in textDetails['text']:
+#         if word != '':
+#             wordList.append(word)
+#             lastWord = word
+#         if (lastWord != '' and word == '') or (word == textDetails['text'][-1]):
+#             parsedText.append(wordList)
+#             wordList = []
+#     return parsedText
 
 def GetExpense(parsedText: list) -> float:
     #print(parsedText)
@@ -69,13 +71,16 @@ def GetPurchase(parsedText):
     
 #------# Preprocessing #------#
 
-im = cv2.imread('kvitton/kvitto.jpg')
+img = cv2.imread('kvitton/kvitto.jpg')
 
 # make gray
-im = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
+img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
 # make binary
-im = cv2.threshold(im, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
+im = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
+
+## Adaptive is not an improvement
+#im = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 41, 5) 
 
 # Control - show the image
 # cv2.imshow('the image', im)
@@ -109,7 +114,7 @@ parsedText = ParseText(details)
 purchase = GetExpense(parsedText)
 
 # ----- # Save to txt # ------ # 
-with open('result_text.txt', 'w', newline='') as file:
+with open('result_text_adaptive.txt', 'w', newline='') as file:
     csv.writer(file, delimiter=" ").writerows(parsedText)
 
 # ----- # Save to Excel # ----- #
